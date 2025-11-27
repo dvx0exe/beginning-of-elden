@@ -13,7 +13,7 @@ Interface via terminal robusta que valida as entradas do usuário (como idade e 
 <img width="1011" height="617" alt="Captura de tela 2025-11-26 211756" src="https://github.com/user-attachments/assets/a87c3571-0bca-4e73-a0ed-e5ce2cee9e11" />
 
 
-4. Sistema de Builds Automatizadas
+3. Sistema de Builds Automatizadas
 Um dos diferenciais do projeto. Após escolher a classe, o usuário seleciona uma "Build" específica. O código Python aplica automaticamente modificadores de atributos e adiciona itens ao inventário do objeto, demonstrando lógica de jogo complexa.
 
 <img width="1135" height="748" alt="Captura de tela 2025-11-26 211813" src="https://github.com/user-attachments/assets/89ad1001-2d36-4846-abab-4da522ca3869" />
