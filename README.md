@@ -79,6 +79,3 @@ Exemplo de uma ficha completa recuperada do banco de dados MySQL. O sistema real
     * `python-dotenv`: Gerenciamento de variáveis de ambiente.
     * `hashlib` (Nativa): Segurança de senhas.
     * `json` (Nativa): Manipulação de estrutura de dados complexos.
-
----
-*Este projeto foi desenvolvido para fins educacionais, demonstrando competências em Back-end, POO e Banco de Dados.*
