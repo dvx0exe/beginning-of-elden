@@ -719,201 +719,124 @@ def registrar_usuario():
     if not senha:
         print("Senha não pode ser vazia!")
         return
+    
     senha_hash = bcrypt.hashpw(senha.encode('utf-8'), bcrypt.gensalt())
     
     try:
-        conexao = criar_conexao()
-        if conexao is None:
-            return
-        cursor = conexao.cursor()
-        cursor.execute("INSERT INTO usuarios (login, senha) VALUES (%s, %s)", (login, senha_hash))
-        conexao.commit()
-        print("Usuário registrado com sucesso!")
+        with DBConnection() as (conexao, cursor):
+            cursor.execute(
+                "INSERT INTO usuarios (login, senha) VALUES (%s, %s)", 
+                (login, senha_hash.decode('utf-8'))
+            )
+            conexao.commit()
+            print("Usuário registrado com sucesso!")
+            
     except Error as err:
         print(f"Erro ao registrar usuário: {err}")
-    finally:
-        if 'conexao' in locals() and conexao and conexao.is_connected():
-            cursor.close()
-            conexao.close()
 
 def login_usuario():
     login = input("Digite seu usuário: ").strip()
     senha = input("Digite sua senha: ").strip()
     
     try:
-        conexao = criar_conexao()
-        if conexao is None:
-            return None
-        cursor = conexao.cursor()
-        cursor.execute("SELECT id, senha FROM usuarios WHERE login = %s", (login,))
-        resultado = cursor.fetchone()
-        
-        if resultado and bcrypt.checkpw(senha.encode('utf-8'), resultado[1].encode('utf-8')):
-            print("Login bem-sucedido!")
-            return resultado[0]
-        else:
-            print("Usuário ou senha inválidos!")
-            return None
+        with DBConnection() as (conexao, cursor):
+            cursor.execute("SELECT id, senha FROM usuarios WHERE login = %s", (login,))
+            resultado = cursor.fetchone()
+            
+            if resultado and bcrypt.checkpw(senha.encode('utf-8'), resultado['senha'].encode('utf-8')):
+                print("Login bem-sucedido!")
+                return resultado['id']
+            else:
+                print("Usuário ou senha inválidos!")
+                return None
+                
     except Error as err:
         print(f"Erro ao fazer login: {err}")
         return None
-    finally:
-        if 'conexao' in locals() and conexao and conexao.is_connected():
-            cursor.close()
-            conexao.close()
 
 def salvar_personagem(personagem, usuario_id):
     try:
-        conexao = criar_conexao()
-        if conexao is None:
-            return
-        cursor = conexao.cursor()
-        
-        query = """INSERT INTO personagens (
-            usuario_id, nome, idade, classe, raca, 
-            vigor, mente, fortitude, forca, destreza, 
-            inteligencia, fe, arcano, build_escolhida,
-            equipamento, roupas
-        ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"""
-        
-        valores = (
-            usuario_id,
-            personagem.nome,
-            personagem.idade,
-            personagem.classe,
-            personagem.raca,
-            personagem.vigor,
-            personagem.mente,
-            personagem.fortitude,
-            personagem.forca,
-            personagem.destreza,
-            personagem.inteligencia,
-            personagem.fe,
-            personagem.arcano,
-            personagem.build_escolhida,
-            json.dumps(personagem.equipamento),
-            json.dumps(personagem.roupas)
-        )
-        
-        cursor.execute(query, valores)
-        conexao.commit()
-        print("Personagem salvo com sucesso!")
+        with DBConnection() as (conexao, cursor):
+            query = """INSERT INTO personagens (
+                usuario_id, nome, idade, classe, raca, 
+                vigor, mente, fortitude, forca, destreza, 
+                inteligencia, fe, arcano, build_escolhida,
+                equipamento, roupas
+            ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"""
+            
+            valores = (
+                usuario_id, personagem.nome, personagem.idade, personagem.classe, personagem.raca,
+                personagem.vigor, personagem.mente, personagem.fortitude, personagem.forca,
+                personagem.destreza, personagem.inteligencia, personagem.fe, personagem.arcano,
+                personagem.build_escolhida,
+                json.dumps(personagem.equipamento),
+                json.dumps(personagem.roupas)
+            )
+            
+            cursor.execute(query, valores)
+            conexao.commit()
+            print("Personagem salvo com sucesso!")
+            
     except Error as err:
         print(f"Erro ao salvar personagem: {err}")
-    finally:
-        if 'conexao' in locals() and conexao and conexao.is_connected():
-            cursor.close()
-            conexao.close()
 
 def listar_personagens(usuario_id):
     try:
-        conexao = criar_conexao()
-        if conexao is None:
-            return
-        cursor = conexao.cursor(dictionary=True)
-        
-        cursor.execute(
-            """SELECT id, nome, idade, classe, raca, build_escolhida, 
-            vigor, mente, fortitude, forca, destreza, inteligencia, 
-            fe, arcano, equipamento, roupas 
-            FROM personagens 
-            WHERE usuario_id = %s""",
-            (usuario_id,)
-        )
-        personagens = cursor.fetchall()
-        
-        if not personagens:
-            print("Nenhum personagem encontrado.")
-            return
-        
-        for p in personagens:
-            equipamento = json.loads(p['equipamento']) if p['equipamento'] else []
-            roupas = json.loads(p['roupas']) if p['roupas'] else []
-            print("\n" + "=" * 50)
-            print(f"ID: {p['id']}")
-            print(f"Nome: {p['nome']}")
-            print(f"Idade: {p['idade']}")
-            print(f"Classe: {p['classe']}")
-            print(f"Raça: {p['raca']}")
-            print(f"Build escolhida: {p.get('build_escolhida', 'Nenhuma')}")
-            print("\nATRIBUTOS:")
-            print(f"  Vigor: {p['vigor']}")
-            print(f"  Mente: {p['mente']}")
-            print(f"  Fortitude: {p['fortitude']}")
-            print(f"  Força: {p['forca']}")
-            print(f"  Destreza: {p['destreza']}")
-            print(f"  Inteligência: {p['inteligencia']}")
-            print(f"  Fé: {p['fe']}")
-            print(f"  Arcano: {p['arcano']}")
-            print("\nEQUIPAMENTO:")
-            print(f"  {', '.join(equipamento) if equipamento else 'Nenhum'}")
-            print("\nVESTIMENTAS:")
-            print(f"  {', '.join(roupas) if roupas else 'Nenhuma'}")
-            print("=" * 50 + "\n")
+        with DBConnection() as (conexao, cursor):
+            cursor.execute(
+                """SELECT * FROM personagens WHERE usuario_id = %s""",
+                (usuario_id,)
+            )
+            personagens = cursor.fetchall()
             
+            if not personagens:
+                print("Nenhum personagem encontrado.")
+                return
+
+            for p in personagens:
+                equipamento = json.loads(p['equipamento']) if p['equipamento'] else []
+                roupas = json.loads(p['roupas']) if p['roupas'] else []
+                
+                print("\n" + "=" * 50)
+                print(f"ID: {p['id']} | Nome: {p['nome']} | Classe: {p['classe']} | Raça: {p['raca']}")
+                print(f"Build: {p.get('build_escolhida', 'Nenhuma')}")
+                print("-" * 20)
+                print(f"ATRIBUTOS: Vigor {p['vigor']} | Mente {p['mente']} | Força {p['forca']} | Destreza {p['destreza']}")
+                print(f"Inteligência {p['inteligencia']} | Fé {p['fe']} | Arcano {p['arcano']}")
+                print("-" * 20)
+                print(f"Equipamento: {', '.join(equipamento) if equipamento else 'Nenhum'}")
+                print(f"Roupas: {', '.join(roupas) if roupas else 'Nenhuma'}")
+                print("=" * 50)
+
     except Error as err:
         print(f"Erro ao listar personagens: {err}")
-    finally:
-        if 'conexao' in locals() and conexao and conexao.is_connected():
-            cursor.close()
-            conexao.close()
 
 def excluir_personagem(usuario_id):
     listar_personagens(usuario_id)
+    
     try:
         personagem_id = int(input("\nDigite o ID do personagem a ser excluído: "))
     except ValueError:
-        print("ID inválido! Deve ser um número.")
+        print("ID inválido!")
         return
-    
+
     try:
-        conexao = criar_conexao()
-        if conexao is None:
-            return
-        cursor = conexao.cursor(dictionary=True)
-        
-        cursor.execute("SELECT * FROM personagens WHERE id = %s AND usuario_id = %s", (personagem_id, usuario_id))
-        personagem = cursor.fetchone()
-        
-        if not personagem:
-            print("Personagem não encontrado ou não pertence ao usuário!")
-            return
-        
-        equipamento = json.loads(personagem['equipamento']) if personagem['equipamento'] else []
-        roupas = json.loads(personagem['roupas']) if personagem['roupas'] else []
-        print("\nDETALHES DO PERSONAGEM A SER EXCLUÍDO:")
-        print(f"ID: {personagem['id']}")
-        print(f"Nome: {personagem['nome']}")
-        print(f"Idade: {personagem['idade']}")
-        print(f"Classe: {personagem['classe']}")
-        print(f"Raça: {personagem['raca']}")
-        print(f"Build: {personagem.get('build_escolhida', 'Nenhuma')}")
-        print(f"Vigor: {personagem['vigor']}")
-        print(f"Mente: {personagem['mente']}")
-        print(f"Fortitude: {personagem['fortitude']}")
-        print(f"Força: {personagem['forca']}")
-        print(f"Destreza: {personagem['destreza']}")
-        print(f"Inteligência: {personagem['inteligencia']}")
-        print(f"Fé: {personagem['fe']}")
-        print(f"Arcano: {personagem['arcano']}")
-        print(f"Equipamento: {', '.join(equipamento) if equipamento else 'Nenhum'}")
-        print(f"Roupas: {', '.join(roupas) if roupas else 'Nenhuma'}")
-        print("-" * 50)
-        
-        confirmacao = input("Tem certeza que deseja excluir este personagem? (s/n): ").strip().lower()
-        if confirmacao == 's':
-            cursor.execute("DELETE FROM personagens WHERE id = %s AND usuario_id = %s", (personagem_id, usuario_id))
-            conexao.commit()
-            print("Personagem excluído com sucesso!" if cursor.rowcount > 0 else "Falha na exclusão.")
-        else:
-            print("Exclusão cancelada.")
-            
+        with DBConnection() as (conexao, cursor):
+            cursor.execute("SELECT id FROM personagens WHERE id = %s AND usuario_id = %s", (personagem_id, usuario_id))
+            if not cursor.fetchone():
+                print("Personagem não encontrado ou não pertence a você.")
+                return
+
+            confirmacao = input("Tem certeza? (s/n): ").lower()
+            if confirmacao == 's':
+                cursor.execute("DELETE FROM personagens WHERE id = %s", (personagem_id,))
+                conexao.commit()
+                print("Personagem excluído!")
+            else:
+                print("Operação cancelada.")
+                
     except Error as err:
-        print(f"Erro ao excluir personagem: {err}")
-    finally:
-        if 'conexao' in locals() and conexao and conexao.is_connected():
-            cursor.close()
-            conexao.close()
+        print(f"Erro ao excluir: {err}")
 
 def criar_personagem(usuario_id):
     nome = input("Digite o nome do personagem: ").strip()
