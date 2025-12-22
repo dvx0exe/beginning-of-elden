@@ -702,14 +702,6 @@ class TextBuild:
         ----------------------------------------------------------------------------------------------------
         """
 
-def criar_conexao():
-    try:
-        conexao = mysql.connector.connect(**DB_CONFIG)
-        return conexao
-    except Error as err:
-        print(f"Erro ao conectar ao MySQL: {err}")
-        return None
-
 def registrar_usuario():
     login = input("Digite um nome de usuário: ").strip()
     if not login:
