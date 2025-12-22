@@ -16,21 +16,31 @@ DB_CONFIG = {
 
 class Personagem:
     def __init__(self, nome, idade, classe):
-        self.__nome = nome
-        self.__idade = idade
-        self.__classe = classe
-        self.__equipamento = []
-        self.__roupas = []
-        self.__vigor = 0
-        self.__mente = 0
-        self.__fortitude = 0
-        self.__forca = 0
-        self.__destreza = 0
-        self.__inteligencia = 0
-        self.__fe = 0
-        self.__arcano = 0
-        self.__build_escolhida = ""
-        self.__raca = ""
+        self.nome = nome  
+        self.idade = idade
+        self.classe = classe
+        self.raca = ""
+        self.vigor = 0
+        self.mente = 0
+        self.fortitude = 0
+        self.forca = 0
+        self.destreza = 0
+        self.inteligencia = 0
+        self.fe = 0
+        self.arcano = 0
+        self.build_escolhida = ""
+        self.equipamento = []
+        self.roupas = []
+        
+    @property
+    def nome(self):
+        return self._nome
+
+    @nome.setter
+    def nome(self, valor):
+        if not valor:
+            raise ValueError("Nome não pode ser vazio!")
+        self._nome = valor
 
     def __str__(self):
         msg = f"Nome: {self.nome}\n"
@@ -49,61 +59,6 @@ class Personagem:
         msg += "Roupas: " + ", ".join(self.roupas) + "\n"
         msg += f"Build escolhida: {self.build_escolhida or 'Nenhuma'}\n"
         return msg
-
-    @property
-    def nome(self): return self.__nome
-    @property
-    def idade(self): return self.__idade
-    @property
-    def classe(self): return self.__classe
-    @property
-    def vigor(self): return self.__vigor
-    @vigor.setter
-    def vigor(self, valor): self.__vigor = valor
-    @property
-    def mente(self): return self.__mente
-    @mente.setter
-    def mente(self, valor): self.__mente = valor
-    @property
-    def fortitude(self): return self.__fortitude
-    @fortitude.setter
-    def fortitude(self, valor): self.__fortitude = valor
-    @property
-    def forca(self): return self.__forca
-    @forca.setter
-    def forca(self, valor): self.__forca = valor
-    @property
-    def destreza(self): return self.__destreza
-    @destreza.setter
-    def destreza(self, valor): self.__destreza = valor
-    @property
-    def inteligencia(self): return self.__inteligencia
-    @inteligencia.setter
-    def inteligencia(self, valor): self.__inteligencia = valor
-    @property
-    def fe(self): return self.__fe
-    @fe.setter
-    def fe(self, valor): self.__fe = valor
-    @property
-    def arcano(self): return self.__arcano
-    @arcano.setter
-    def arcano(self, valor): self.__arcano = valor
-    @property
-    def equipamento(self): return self.__equipamento
-    @equipamento.setter
-    def equipamento(self, valor): self.__equipamento = valor
-    @property
-    def roupas(self): return self.__roupas
-    @roupas.setter
-    def roupas(self, valor): self.__roupas = valor
-    @property
-    def build_escolhida(self): return self.__build_escolhida
-    @build_escolhida.setter
-    def build_escolhida(self, valor): self.__build_escolhida = valor
-    @property
-    def raca(self): return self.__raca
-    @raca.setter
-    def raca(self, valor): self.__raca = valor
 
 class Heroi(Personagem):
     def __init__(self, nome, idade):
